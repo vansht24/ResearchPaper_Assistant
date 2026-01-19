@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual Environment
+backend/venv/
+venv/
+
+# Environment files
+.env
+backend/.env
+.env.local
+
+# Node / Next.js (future)
+node_modules/
+.next/
+out/
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Testing
+.pytest_cache/
