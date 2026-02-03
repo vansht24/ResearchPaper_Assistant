@@ -1,18 +1,11 @@
-/**
- * API client for backend communication
- * Week 2: PDF upload and document management
- */
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-/**
- * Upload a PDF file to the backend
- */
+// Upload PDF
 export async function uploadPDF(file) {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch(`${API_URL}/api/upload/pdf`, {
+  const response = await fetch(`${API_URL}/api/documents/upload/pdf`, {
     method: 'POST',
     body: formData,
   });
@@ -25,9 +18,7 @@ export async function uploadPDF(file) {
   return response.json();
 }
 
-/**
- * Get list of all uploaded documents
- */
+// List documents
 export async function listDocuments() {
   const response = await fetch(`${API_URL}/api/documents/list`);
 
@@ -38,9 +29,7 @@ export async function listDocuments() {
   return response.json();
 }
 
-/**
- * Delete a document
- */
+// Delete document
 export async function deleteDocument(filename) {
   const response = await fetch(`${API_URL}/api/documents/${filename}`, {
     method: 'DELETE',
@@ -53,15 +42,26 @@ export async function deleteDocument(filename) {
   return response.json();
 }
 
-/**
- * Get processed data for a specific PDF
- */
-export async function getProcessedData(filename) {
-  const response = await fetch(`${API_URL}/api/upload/processed/${filename}`);
+// Query documents (RAG)
+export async function queryDocuments(query, topK = 3) {
+  const response = await fetch(`${API_URL}/api/query/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query, top_k: topK }),
+  });
 
   if (!response.ok) {
-    throw new Error('Failed to fetch processed data');
+    const error = await response.json();
+    throw new Error(error.detail || 'Query failed');
   }
 
+  return response.json();
+}
+
+// Health check
+export async function checkHealth() {
+  const response = await fetch(`${API_URL}/api/query/health`);
   return response.json();
 }
