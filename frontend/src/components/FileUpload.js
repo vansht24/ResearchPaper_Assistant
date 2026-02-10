@@ -82,25 +82,15 @@ export default function FileUpload({ onUploadSuccess }) {
         </p>
       )}
 
-      {result && (
+     {result && (
         <div className="bg-blue-50 border border-blue-200 rounded p-4 space-y-2">
-          <h4 className="font-semibold text-blue-900">Processing Complete:</h4>
+          <h4 className="font-semibold text-blue-900">Upload Complete:</h4>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>✓ Total characters: {result.total_characters.toLocaleString()}</li>
-            <li>✓ Number of chunks: {result.num_chunks}</li>
+            <li>✓ Filename: {result.filename}</li>
+            <li>✓ Size: {(result.size / 1024).toFixed(2)} KB</li>
           </ul>
-          {result.preview && (
-            <details className="mt-3">
-              <summary className="cursor-pointer text-blue-700 font-medium">
-                View Text Preview
-              </summary>
-              <p className="mt-2 text-xs text-gray-700 bg-white p-3 rounded border">
-                {result.preview}...
-              </p>
-            </details>
-          )}
         </div>
-      )}
+      )} 
     </div>
   );
 }
