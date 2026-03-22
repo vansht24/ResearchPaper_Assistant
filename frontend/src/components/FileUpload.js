@@ -119,8 +119,27 @@ export default function FileUpload({ onSuccess }) {
               <span>{k}</span><span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{v}</span>
             </div>
           ))}
-        </div>
+
+      {message && (
+        <p
+          className={`text-sm font-medium ${
+            message.startsWith('✅') ? 'text-green-600' : 'text-red-600'
+          }`}
+        >
+          {message}
+        </p>
       )}
+
+     {result && (
+        <div className="bg-blue-50 border border-blue-200 rounded p-4 space-y-2">
+          <h4 className="font-semibold text-blue-900">Upload Complete:</h4>
+          <ul className="text-sm text-blue-800 space-y-1">
+            <li>✓ Filename: {result.filename}</li>
+            <li>✓ Size: {(result.size / 1024).toFixed(2)} KB</li>
+          </ul>
+
+        </div>
+      )} 
     </div>
   );
 }

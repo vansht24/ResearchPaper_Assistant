@@ -13,12 +13,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Upload routes - matches frontend expectation: /api/documents/...
 app.include_router(
     upload.router,
-    prefix="/api/upload",
-    tags=["Upload"]
+    prefix="/api/documents",
+    tags=["Documents"]
 )
 
+# Query routes - matches frontend expectation: /api/query
 app.include_router(
     query.router,
     prefix="/api/query",
