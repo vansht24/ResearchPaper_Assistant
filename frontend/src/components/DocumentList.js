@@ -1,111 +1,104 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { listDocuments, deleteDocument } from '../lib/api';
 
+const TrashIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+  </svg>
+);
 
-export default function DocumentList({ refreshTrigger }) {
-  const [documents, setDocuments] = useState([]);
+const DocIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+  </svg>
+);
+
+function fmt(b) { return b < 1048576 ? (b / 1024).toFixed(1) + ' KB' : (b / 1048576).toFixed(1) + ' MB'; }
+function fmtDate(ts) { return new Date(ts * 1000).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }); }
+
+export default function DocumentList({ refresh }) {
+  const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [deleting, setDeleting] = useState(null);
 
-  const fetchDocuments = async () => {
+  const load = async () => {
     setLoading(true);
-    setError('');
-
-    try {
-      const data = await listDocuments();
-      setDocuments(data.documents || []);
-    } catch (err) {
-      setError('Failed to load documents');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    try { const d = await listDocuments(); setDocs(d.documents || []); }
+    catch { setDocs([]); }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    fetchDocuments();
-  }, [refreshTrigger]);
+  useEffect(() => { load(); }, [refresh]);
 
-  const handleDelete = async (filename) => {
-    if (!confirm(`Delete "${filename}"?`)) return;
-
-    try {
-      await deleteDocument(filename);
-      await fetchDocuments();
-    } catch (err) {
-      alert('Failed to delete document');
-      console.error(err);
-    }
+  const del = async (name) => {
+    if (!confirm(`Remove "${name}" and all its indexed embeddings?`)) return;
+    setDeleting(name);
+    try { await deleteDocument(name); await load(); }
+    catch { alert('Delete failed.'); }
+    finally { setDeleting(null); }
   };
 
-  const formatDate = (timestamp) => {
-    return new Date(timestamp * 1000).toLocaleString();
-  };
+  if (loading) return (
+    <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>Loading library…</div>
+  );
 
-  const formatSize = (bytes) => {
-    return (bytes / 1024).toFixed(2) + ' KB';
-  };
-
-  if (loading) {
-    return <div className="text-center py-8 text-gray-500">Loading documents...</div>;
-  }
-
-  if (error) {
-    return <div className="text-center py-8 text-red-600">{error}</div>;
-  }
-
-  if (documents.length === 0) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        <p>No documents uploaded yet</p>
-      </div>
-    );
-  }
+  if (docs.length === 0) return (
+    <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+      <div style={{ fontSize: 28, marginBottom: 8, opacity: 0.3 }}>📚</div>
+      <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No documents yet</p>
+      <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, opacity: 0.6 }}>Upload a PDF to build your library</p>
+    </div>
+  );
 
   return (
-    <div className="space-y-3">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-semibold text-lg">
-          Uploaded Documents ({documents.length})
-        </h3>
-        <button
-          onClick={fetchDocuments}
-          className="text-sm text-blue-600 hover:text-blue-700"
-        >
-          🔄 Refresh
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          {docs.length} document{docs.length !== 1 ? 's' : ''}
+        </span>
+        <button onClick={load} style={{ fontSize: 11, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', opacity: 0.8 }}>
+          Refresh
         </button>
       </div>
 
-      {documents.map((doc, index) => (
-        <div
-          key={index}
-          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
-        >
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <p className="font-medium text-gray-800">📄 {doc.filename}</p>
-              {doc.processed && (
-                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                  ✓ Processed
-                </span>
-              )}
-            </div>
-            <p className="text-sm text-gray-500 mt-1">
-              {formatSize(doc.size)} • Uploaded {formatDate(doc.uploaded_at)}
-              {doc.num_chunks && ` • ${doc.num_chunks} chunks`}
-            </p>
-          </div>
-
-          <button
-            onClick={() => handleDelete(doc.filename)}
-            className="ml-4 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {docs.map(doc => (
+          <div
+            key={doc.filename}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '10px 12px', borderRadius: 'var(--radius-sm)',
+              background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+              transition: 'border-color 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-md)'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
           >
-            Delete
-          </button>
-        </div>
-      ))}
+            <div style={{ color: 'var(--accent)', opacity: 0.7, flexShrink: 0 }}><DocIcon /></div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.filename}</p>
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, fontFamily: 'var(--font-mono)' }}>
+                {fmt(doc.size)} · {fmtDate(doc.uploaded_at)}
+              </p>
+            </div>
+            <button
+              onClick={() => del(doc.filename)}
+              disabled={deleting === doc.filename}
+              style={{
+                background: 'none', border: 'none', cursor: deleting === doc.filename ? 'not-allowed' : 'pointer',
+                color: 'var(--text-muted)', opacity: deleting === doc.filename ? 0.4 : 0.6,
+                padding: 4, borderRadius: 4, transition: 'opacity 0.15s, color 0.15s',
+                flexShrink: 0,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--red)'; e.currentTarget.style.opacity = '1'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.opacity = '0.6'; }}
+            >
+              <TrashIcon />
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

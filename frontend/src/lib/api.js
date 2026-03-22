@@ -1,71 +1,31 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-/**
- * Upload a PDF file to the backend
- */
 export async function uploadPDF(file) {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const response = await fetch(`${API_BASE_URL}/api/documents/upload/pdf`, {
-    method: 'POST',
-    body: formData,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Upload failed' }));
-    throw new Error(error.detail || 'Upload failed');
-  }
-
-  return await response.json();
+  const fd = new FormData();
+  fd.append('file', file);
+  const r = await fetch(`${API}/api/documents/upload/pdf`, { method: 'POST', body: fd });
+  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || 'Upload failed'); }
+  return r.json();
 }
 
-
-/**
- * List all uploaded documents
- */
 export async function listDocuments() {
-  const response = await fetch(`${API_BASE_URL}/api/documents/list`);
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch documents');
-  }
-
-  return await response.json();
+  const r = await fetch(`${API}/api/documents/list`);
+  if (!r.ok) throw new Error('Failed to list documents');
+  return r.json();
 }
 
-
-/**
- * Delete a document
- */
 export async function deleteDocument(filename) {
-  const response = await fetch(`${API_BASE_URL}/api/documents/${filename}`, {
-    method: 'DELETE',
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to delete document');
-  }
-
-  return await response.json();
+  const r = await fetch(`${API}/api/documents/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+  if (!r.ok) throw new Error('Delete failed');
+  return r.json();
 }
 
-
-/**
- * Query documents (RAG search)
- */
-export async function queryDocuments(query) {
-  const response = await fetch(`${API_BASE_URL}/api/query`, {
+export async function queryDocuments(query, top_k = 3) {
+  const r = await fetch(`${API}/api/query/`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ query }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, top_k }),
   });
-
-  if (!response.ok) {
-    throw new Error('Failed to query documents');
-  }
-
-  return await response.json();
+  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || 'Query failed'); }
+  return r.json();
 }
