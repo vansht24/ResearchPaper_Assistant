@@ -1,31 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 :root {
-  --bg-base:      #0e0f11;
-  --bg-surface:   #141618;
-  --bg-elevated:  #1c1e22;
-  --bg-hover:     #22252b;
-  --border:       rgba(255,255,255,0.07);
-  --border-md:    rgba(255,255,255,0.12);
-  --accent:       #c8a96e;
-  --accent-dim:   rgba(200,169,110,0.15);
-  --accent-glow:  rgba(200,169,110,0.08);
-  --text-primary: #f0ece4;
-  --text-secondary:#9a9590;
-  --text-muted:   #5a5652;
-  --green:        #4caf7d;
-  --green-dim:    rgba(76,175,125,0.12);
-  --red:          #e05c5c;
-  --red-dim:      rgba(224,92,92,0.12);
-  --blue:         #6b9fd4;
-  --blue-dim:     rgba(107,159,212,0.12);
-  --font-serif:   'Instrument Serif', Georgia, serif;
-  --font-sans:    'DM Sans', system-ui, sans-serif;
-  --font-mono:    'DM Mono', 'Courier New', monospace;
-  --radius-sm:    6px;
-  --radius-md:    10px;
-  --radius-lg:    16px;
+  /* Crisp Light Backgrounds */
+  --bg-base:      #F8FAFC; /* Very soft slate/off-white for the app background */
+  --bg-surface:   #FFFFFF; /* Pure white for sidebars and headers */
+  --bg-elevated:  #FFFFFF; /* Pure white for cards/inputs */
+  --bg-hover:     #F1F5F9; /* Subtle gray for hover states */
+  
+  /* Defined Borders */
+  --border:       #E2E8F0;
+  --border-md:    #CBD5E1;
+  
+  /* Vibrant Orange Accent */
+  --accent:       #F97316; /* Bright, energetic orange */
+  --accent-dim:   rgba(249, 115, 22, 0.12);
+  --accent-glow:  rgba(249, 115, 22, 0.06);
+  
+  /* Text Colors for High Readability */
+  --text-primary: #0F172A; /* Deep slate, softer than pure black */
+  --text-secondary:#475569; /* Medium slate gray */
+  --text-muted:   #64748B; /* Lighter slate gray */
+  
+  /* Status Colors (Adjusted for light mode) */
+  --green:        #10B981;
+  --green-dim:    rgba(16, 185, 129, 0.12);
+  --red:          #EF4444;
+  --red-dim:      rgba(239, 68, 68, 0.12);
+  --blue:         #3B82F6;
+  --blue-dim:     rgba(59, 130, 246, 0.12);
+  
+  /* Typography */
+  --font-serif:   'Inter', system-ui, sans-serif;
+  --font-sans:    'Inter', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+  
+  /* Rounded Corners */
+  --radius-sm:    8px;
+  --radius-md:    14px;
+  --radius-lg:    20px;
+
+  /* Shadows for depth in light mode */
+  --shadow-sm:    0 2px 4px -1px rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  --shadow-md:    0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,15 +51,16 @@ html, body {
   background: var(--bg-base);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.6;
   height: 100%;
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 ::selection { background: var(--accent-dim); color: var(--accent); }

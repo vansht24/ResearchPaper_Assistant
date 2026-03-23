@@ -5,48 +5,45 @@ import DocumentList from '@/components/DocumentList';
 import ChatInterface from '@/components/ChatInterface';
 
 const Logo = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round">
-    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round">
+    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
   </svg>
 );
 
 const PipelineStep = ({ num, label, desc }) => (
-  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '8px 0' }}>
     <div style={{
-      width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
-      background: 'var(--accent-dim)', border: '1px solid rgba(200,169,110,0.3)',
+      width: 24, height: 24, borderRadius: '6px', flexShrink: 0,
+      background: 'var(--accent-dim)', border: '1px solid rgba(249, 115, 22, 0.2)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: 10, fontWeight: 500, color: 'var(--accent)',
+      fontSize: 11, fontWeight: 600, color: 'var(--accent)',
       fontFamily: 'var(--font-mono)',
     }}>{num}</div>
     <div>
-      <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)' }}>{label}</p>
-      <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, lineHeight: 1.5 }}>{desc}</p>
+      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</p>
+      <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, lineHeight: 1.4 }}>{desc}</p>
     </div>
   </div>
 );
 
 export default function Home() {
   const [refresh, setRefresh] = useState(0);
-  const [sidePanel, setSidePanel] = useState('upload'); // 'upload' | 'library'
+  const [sidePanel, setSidePanel] = useState('upload'); 
 
   return (
     <>
       <style>{`
         .side-tab {
           flex: 1;
-          padding: 10px 0;
+          padding: 12px 0;
           background: none;
           border: none;
           border-bottom: 2px solid transparent;
-          font-size: 12px;
-          font-weight: 500;
+          font-size: 13px;
+          font-weight: 600;
           font-family: var(--font-sans);
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
           cursor: pointer;
-          transition: color 0.15s, border-color 0.15s;
+          transition: all 0.2s ease;
           color: var(--text-muted);
         }
         .side-tab.active {
@@ -54,39 +51,39 @@ export default function Home() {
           border-bottom-color: var(--accent);
         }
         .side-tab:hover:not(.active) {
-          color: var(--text-secondary);
+          color: var(--text-primary);
         }
         .stat-pill {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          padding: 3px 8px;
+          gap: 6px;
+          padding: 4px 10px;
           border-radius: 99px;
-          background: var(--accent-dim);
-          border: 1px solid rgba(200,169,110,0.2);
-          font-size: 10px;
+          background: var(--bg-base);
+          border: 1px solid var(--border-md);
+          font-size: 11px;
           font-family: var(--font-mono);
-          color: var(--accent);
-          letter-spacing: 0.04em;
+          color: var(--text-secondary);
+          letter-spacing: 0.02em;
         }
         .divider {
           height: 1px;
           background: var(--border);
-          margin: 20px 0;
+          margin: 24px 0;
         }
         .section-label {
-          font-size: 10px;
-          letter-spacing: 0.08em;
+          font-size: 11px;
+          letter-spacing: 0.05em;
           text-transform: uppercase;
           color: var(--text-muted);
-          margin-bottom: 14px;
-          font-weight: 500;
+          margin-bottom: 16px;
+          font-weight: 700;
         }
       `}</style>
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '300px 1fr',
+        gridTemplateColumns: '320px 1fr',
         gridTemplateRows: '100vh',
         height: '100vh',
         background: 'var(--bg-base)',
@@ -100,24 +97,20 @@ export default function Home() {
           borderRight: '1px solid var(--border)',
           background: 'var(--bg-surface)',
           overflow: 'hidden',
+          boxShadow: 'var(--shadow-md)',
+          zIndex: 10,
         }}>
 
           {/* Brand header */}
-          <div style={{
-            padding: '20px 20px 0',
-            borderBottom: '1px solid var(--border)',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+          <div style={{ padding: '24px 24px 0', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
               <Logo />
               <div>
-                <h1 style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 18,
-                  color: 'var(--text-primary)',
-                  lineHeight: 1.2,
-                }}>Scholara</h1>
-                <p style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.04em', marginTop: 1 }}>
-                  RESEARCH ASSISTANT
+                <h1 style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: 18, color: 'var(--text-primary)', lineHeight: 1.2 }}>
+                  Scholara
+                </h1>
+                <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2, fontWeight: 500 }}>
+                  Research Assistant
                 </p>
               </div>
             </div>
@@ -130,15 +123,14 @@ export default function Home() {
                   className={`side-tab${sidePanel === tab ? ' active' : ''}`}
                   onClick={() => setSidePanel(tab)}
                 >
-                  {tab === 'upload' ? 'Upload' : 'Library'}
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </button>
               ))}
             </div>
           </div>
 
           {/* Panel body */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-
+          <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
             {sidePanel === 'upload' && (
               <>
                 <p className="section-label">Add document</p>
@@ -147,26 +139,12 @@ export default function Home() {
                 <div className="divider" />
 
                 <p className="section-label">RAG pipeline</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  <PipelineStep num="1" label="Extract" desc="PyPDF2 pulls raw text page-by-page" />
-                  <PipelineStep num="2" label="Chunk" desc={`${500}-char segments, ${50}-char overlap`} />
-                  <PipelineStep num="3" label="Embed" desc="all-MiniLM-L6-v2 → 384-dim vectors" />
-                  <PipelineStep num="4" label="Store" desc="ChromaDB persists embeddings to disk" />
-                  <PipelineStep num="5" label="Retrieve" desc="Cosine similarity → top-k chunks" />
-                  <PipelineStep num="6" label="Generate" desc="Mistral via Ollama produces the answer" />
-                </div>
-
-                <div className="divider" />
-
-                <p className="section-label">Stack</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {['Next.js 16', 'FastAPI', 'ChromaDB', 'Ollama', 'Mistral', 'sentence-transformers'].map(t => (
-                    <span key={t} style={{
-                      fontSize: 10, padding: '3px 8px', borderRadius: 4,
-                      background: 'var(--bg-elevated)', border: '1px solid var(--border-md)',
-                      color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)',
-                    }}>{t}</span>
-                  ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <PipelineStep num="1" label="Extract" desc="PyPDF2 pulls raw text" />
+                  <PipelineStep num="2" label="Chunk" desc="500-char segments" />
+                  <PipelineStep num="3" label="Embed" desc="all-MiniLM-L6-v2 vectors" />
+                  <PipelineStep num="4" label="Retrieve" desc="Cosine similarity matching" />
+                  <PipelineStep num="5" label="Generate" desc="Mistral via Ollama" />
                 </div>
               </>
             )}
@@ -181,20 +159,21 @@ export default function Home() {
 
           {/* Footer */}
           <div style={{
-            padding: '12px 20px',
+            padding: '16px 24px',
             borderTop: '1px solid var(--border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            background: 'var(--bg-surface)'
           }}>
-            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-              RAG · v1.0
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+              v1.0.0
             </span>
             <span className="stat-pill">
               <svg width="8" height="8" viewBox="0 0 10 10">
                 <circle cx="5" cy="5" r="4" fill="var(--green)" />
               </svg>
-              ONLINE
+              Online
             </span>
           </div>
         </aside>
@@ -210,51 +189,34 @@ export default function Home() {
 
           {/* Chat top bar */}
           <div style={{
-            padding: '14px 28px',
+            padding: '16px 32px',
             borderBottom: '1px solid var(--border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             background: 'var(--bg-surface)',
             flexShrink: 0,
+            boxShadow: 'var(--shadow-sm)',
+            zIndex: 5,
           }}>
             <div>
-              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>
+              <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>
                 Research Q&amp;A
               </p>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
                 Answers grounded in your uploaded documents
               </p>
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <div style={{
-                padding: '5px 12px',
-                borderRadius: 99,
-                background: 'var(--bg-elevated)',
-                border: '1px solid var(--border-md)',
-                fontSize: 11,
-                color: 'var(--text-secondary)',
-                fontFamily: 'var(--font-mono)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
+                padding: '6px 14px', borderRadius: 99, background: 'var(--bg-base)', border: '1px solid var(--border-md)',
+                fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontWeight: 500,
+                display: 'flex', alignItems: 'center', gap: 6,
               }}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2">
-                  <circle cx="12" cy="12" r="3"/>
-                  <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                 </svg>
                 mistral
-              </div>
-              <div style={{
-                padding: '5px 12px',
-                borderRadius: 99,
-                background: 'var(--bg-elevated)',
-                border: '1px solid var(--border-md)',
-                fontSize: 11,
-                color: 'var(--text-secondary)',
-                fontFamily: 'var(--font-mono)',
-              }}>
-                top-3
               </div>
             </div>
           </div>
