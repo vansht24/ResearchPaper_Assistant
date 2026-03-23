@@ -1,31 +1,57 @@
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
 export async function uploadPDF(file) {
-  const fd = new FormData();
-  fd.append('file', file);
-  const r = await fetch(`${API}/api/documents/upload/pdf`, { method: 'POST', body: fd });
-  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || 'Upload failed'); }
-  return r.json();
+  const formData = new FormData();
+  formData.append('file', file);
+
+  // Update this URL to match your FastAPI backend router!
+  const response = await fetch('http://localhost:8000/api/documents/', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to upload document');
+  }
+
+  return response.json();
 }
 
 export async function listDocuments() {
-  const r = await fetch(`${API}/api/documents/list`);
-  if (!r.ok) throw new Error('Failed to list documents');
-  return r.json();
+  const response = await fetch('http://localhost:8000/api/documents/');
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch documents');
+  }
+  
+  return response.json();
 }
 
 export async function deleteDocument(filename) {
-  const r = await fetch(`${API}/api/documents/${encodeURIComponent(filename)}`, { method: 'DELETE' });
-  if (!r.ok) throw new Error('Delete failed');
-  return r.json();
-}
-
-export async function queryDocuments(query, top_k = 3) {
-  const r = await fetch(`${API}/api/query/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query, top_k }),
+  const response = await fetch(`http://localhost:8000/api/documents/${filename}`, {
+    method: 'DELETE',
   });
-  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || 'Query failed'); }
-  return r.json();
+  
+  if (!response.ok) {
+    throw new Error('Failed to delete document');
+  }
+  
+  return response.json();
+}
+export async function queryDocuments(queryText) {
+  // Update this URL if your FastAPI query route is mounted differently
+  const response = await fetch('http://localhost:8000/api/query', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    // Sends the question as a JSON object: { "query": "What are the main findings?" }
+    body: JSON.stringify({ query: queryText }), 
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to get an answer from the documents');
+  }
+
+  return response.json();
 }

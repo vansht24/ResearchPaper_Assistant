@@ -1,134 +1,108 @@
-"""
-Document management endpoints with RAG pipeline
-"""
-
 from fastapi import APIRouter, UploadFile, File, HTTPException
+import shutil
+import os
+import uuid
 from pathlib import Path
-from src.config.settings import settings
+
 from src.utils.logger import setup_logger
 from src.ingestion.pdf_processor import process_pdf
-from src.embeddings.embeddings import get_embedding_model
 from src.retrieval.vector_store import get_vector_store
-import shutil
+from src.embeddings.embedding_manager import get_embedding_manager
 
-router = APIRouter()
 logger = setup_logger(__name__)
 
+# This is the exact variable main.py is looking for!
+router = APIRouter()
 
-@router.post("/upload/pdf")
-async def upload_pdf(file: UploadFile = File(...)):
-    """
-    Upload a PDF file and process it for RAG
-    """
+@router.post("/")
+async def upload_document(file: UploadFile = File(...)):
+    if not file.filename.endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
+
     try:
-        # Validate file type
-        if not file.filename.endswith('.pdf'):
-            raise HTTPException(status_code=400, detail="Only PDF files are allowed")
-        
-        # Ensure directories exist
-        settings.create_directories()
-        
-        # Save file
-        file_path = Path(settings.raw_pdf_dir) / file.filename
-        
-        with file_path.open("wb") as buffer:
+        # 1. Define where to save the uploaded PDF
+        save_directory = "data/raw_pdfs"
+        os.makedirs(save_directory, exist_ok=True)
+        file_path = os.path.join(save_directory, file.filename)
+
+        # 2. Save the file to disk
+        with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        
-        logger.info(f"PDF uploaded: {file.filename}")
-        
-        # Process PDF: extract text and chunk it
-        pdf_data = process_pdf(file_path)
-        
-        # Generate embeddings
-        embedding_model = get_embedding_model()
-        embeddings = embedding_model.embed_texts(pdf_data["chunks"])
-        
-        # Store in vector database
-        vector_store = get_vector_store()
-        
-        # Create IDs and metadata for each chunk
-        ids = [f"{file.filename}_chunk_{i}" for i in range(len(pdf_data["chunks"]))]
-        metadatas = [
-            {
-                "filename": file.filename,
-                "chunk_index": i,
-                "total_chunks": len(pdf_data["chunks"])
-            }
-            for i in range(len(pdf_data["chunks"]))
-        ]
-        
-        vector_store.add_documents(
-            texts=pdf_data["chunks"],
-            embeddings=embeddings,
-            metadatas=metadatas,
-            ids=ids
-        )
-        
-        logger.info(f"Processed and stored {len(pdf_data['chunks'])} chunks from {file.filename}")
-        
+            
+        logger.info(f"Successfully saved uploaded file to {file_path}")
+
+        # 3. Extract and chunk the PDF text
+        pdf_data = process_pdf(Path(file_path))
+        chunks = pdf_data["chunks"]
+
+        if chunks:
+            # 4. Generate embeddings for the chunks using the CORRECT method name
+            embedder = get_embedding_manager()
+            embeddings = embedder.embed_texts(chunks)
+
+            # 5. Prepare metadata and unique IDs for ChromaDB
+            metadatas = [{"filename": file.filename, "chunk_index": i} for i in range(len(chunks))]
+            ids = [f"{file.filename}_chunk_{i}_{uuid.uuid4().hex[:8]}" for i in range(len(chunks))]
+
+            # 6. Save everything to the Vector Store
+            vector_store = get_vector_store()
+            vector_store.add_documents(
+                texts=chunks,
+                embeddings=embeddings,
+                metadatas=metadatas,
+                ids=ids
+            )
+            logger.info(f"Successfully indexed {len(chunks)} chunks for {file.filename}")
+
+        # 7. Return the success message with stats for the frontend UI
         return {
-            "message": "File uploaded and processed successfully",
+            "message": "File uploaded and indexed successfully", 
             "filename": file.filename,
-            "size": file_path.stat().st_size,
-            "total_characters": pdf_data["total_characters"],
+            "size": os.path.getsize(file_path),
             "num_chunks": pdf_data["num_chunks"],
-            "preview": pdf_data["preview"]
+            "total_characters": pdf_data["total_characters"]
         }
-    
+
     except Exception as e:
-        logger.error(f"Upload error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Failed to upload document: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to process upload: {str(e)}")
 
-
-@router.get("/list")
+@router.get("/")
 async def list_documents():
-    """
-    List all uploaded documents
-    """
-    try:
-        # Ensure directories exist
-        settings.create_directories()
-        
-        pdf_dir = Path(settings.raw_pdf_dir)
-        pdf_files = list(pdf_dir.glob("*.pdf"))
-        
-        documents = [
-            {
-                "filename": f.name,
-                "size": f.stat().st_size,
-                "uploaded_at": f.stat().st_mtime
-            }
-            for f in pdf_files
-        ]
-        
-        return {"documents": documents, "count": len(documents)}
+    """Returns a list of all uploaded PDFs for the frontend Library tab."""
+    save_directory = "data/raw_pdfs"
     
-    except Exception as e:
-        logger.error(f"List error: {e}")
-        return {"documents": [], "count": 0, "error": str(e)}
-
+    # Return an empty list wrapped in the "documents" key React expects
+    if not os.path.exists(save_directory):
+        return {"documents": []}
+        
+    docs = []
+    for f in os.listdir(save_directory):
+        if f.endswith('.pdf'):
+            file_path = os.path.join(save_directory, f)
+            docs.append({
+                "filename": f,
+                "size": os.path.getsize(file_path),               # Sends the file size!
+                "uploaded_at": os.path.getmtime(file_path)        # Sends the upload timestamp!
+            })
+    
+    # Wrap the list in the exact JSON structure React is looking for
+    return {"documents": docs}
 
 @router.delete("/{filename}")
 async def delete_document(filename: str):
-    """
-    Delete a document and its vector embeddings
-    """
-    try:
-        file_path = Path(settings.raw_pdf_dir) / filename
+    """Deletes a specific PDF when the trash icon is clicked in the UI."""
+    save_directory = "data/raw_pdfs"
+    file_path = os.path.join(save_directory, filename)
+    
+    if os.path.exists(file_path):
+        os.remove(file_path)
         
-        if not file_path.exists():
-            raise HTTPException(status_code=404, detail="File not found")
-        
-        # Delete from vector store
+        # Also delete the chunks from the vector database!
         vector_store = get_vector_store()
         vector_store.delete_by_filename(filename)
         
-        # Delete file
-        file_path.unlink()
-        logger.info(f"Deleted: {filename}")
-        
-        return {"message": "File deleted successfully", "filename": filename}
-    
-    except Exception as e:
-        logger.error(f"Delete error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.info(f"Deleted file and chunks for: {filename}")
+        return {"message": f"Successfully deleted {filename}"}
+    else:
+        raise HTTPException(status_code=404, detail="File not found")
