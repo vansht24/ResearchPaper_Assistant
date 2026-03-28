@@ -30,10 +30,12 @@ The system uses **local Large Language Models via Ollama** along with a **Retrie
 
 ## 🛠 Tech Stack
 
-* **Frontend:** Next.js / React
+* **Frontend:**  React
 * **Backend:** Python (Flask / FastAPI)
 * **LLM Runtime:** Ollama (local models like LLaMA / Mistral)
 * **RAG Pipeline:** Embeddings + vector retrieval
+
+
 
 ---
 
